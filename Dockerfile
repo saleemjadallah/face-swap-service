@@ -1,4 +1,5 @@
 # Face-Swapping Service Dockerfile
+# Updated for Debian Trixie compatibility
 FROM python:3.10-slim
 
 # Install system dependencies for OpenCV and image processing
