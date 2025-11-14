@@ -60,14 +60,31 @@ def initialize_models():
         # Download inswapper model if not exists
         if not model_path.exists():
             logger.info("Downloading face swapper model...")
-            download_url = "https://github.com/facefusion/facefusion-assets/releases/download/models/inswapper_128.onnx"
-            response = requests.get(download_url, stream=True)
-            response.raise_for_status()
+            # Try multiple mirror URLs for the inswapper model
+            download_urls = [
+                "https://huggingface.co/deepinsight/inswapper/resolve/main/inswapper_128.onnx",
+                "https://github.com/deepinsight/insightface/releases/download/v0.7/inswapper_128.onnx",
+            ]
 
-            with open(model_path, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            logger.info("Face swapper model downloaded successfully")
+            downloaded = False
+            for download_url in download_urls:
+                try:
+                    logger.info(f"Trying: {download_url}")
+                    response = requests.get(download_url, stream=True, timeout=300)
+                    response.raise_for_status()
+
+                    with open(model_path, 'wb') as f:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            f.write(chunk)
+                    logger.info("Face swapper model downloaded successfully")
+                    downloaded = True
+                    break
+                except Exception as e:
+                    logger.warning(f"Failed to download from {download_url}: {e}")
+                    continue
+
+            if not downloaded:
+                raise Exception("Failed to download inswapper model from all mirrors")
 
         # Load swapper model
         from insightface.model_zoo import get_model
