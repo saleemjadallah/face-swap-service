@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     libxrender-dev \
     libgomp1 \
     libgl1 \
+    execstack \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -25,6 +26,9 @@ COPY requirements.txt .
 # Install Python dependencies with precompiled ONNX Runtime
 # Use onnxruntime CPU package to avoid executable stack issues
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Clear executable stack flag from ONNX Runtime shared libraries to fix Railway compatibility
+RUN find /usr/local/lib/python3.10/site-packages/onnxruntime -name "*.so" -exec execstack -c {} \; 2>/dev/null || true
 
 # Set environment variable to disable ONNX Runtime telemetry and use CPU execution provider
 ENV ORT_DISABLE_TELEMETRY=1
