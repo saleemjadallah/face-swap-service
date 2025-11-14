@@ -261,6 +261,21 @@ def swap_face(target_image: np.ndarray, source_image: np.ndarray) -> Optional[np
 
 
 # ============================================================================
+# INITIALIZE MODELS ON IMPORT (for Gunicorn)
+# ============================================================================
+
+# Initialize models when module is imported by Gunicorn
+# This ensures models are loaded even when using WSGI servers
+logger.info("=" * 60)
+logger.info("Face-Swapping Microservice Starting")
+logger.info("=" * 60)
+
+if not initialize_models():
+    logger.error("WARNING: Models failed to initialize. Service will report unhealthy.")
+else:
+    logger.info("✓ Models loaded and ready for requests")
+
+# ============================================================================
 # API ENDPOINTS
 # ============================================================================
 
