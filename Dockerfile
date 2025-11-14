@@ -1,6 +1,6 @@
 # Face-Swapping Service Dockerfile
-# Updated for Debian Trixie compatibility
-FROM python:3.10-slim
+# Use standard Python image instead of slim to avoid security issues with ONNX Runtime
+FROM python:3.10
 
 # Install system dependencies for OpenCV, image processing, and build tools
 RUN apt-get update && apt-get install -y \
@@ -22,8 +22,12 @@ WORKDIR /app
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install Python dependencies
+# Install Python dependencies with precompiled ONNX Runtime
+# Use onnxruntime CPU package to avoid executable stack issues
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Set environment variable to disable ONNX Runtime telemetry and use CPU execution provider
+ENV ORT_DISABLE_TELEMETRY=1
 
 # Copy application code
 COPY app.py .
@@ -34,5 +38,5 @@ RUN mkdir -p ./models
 # Expose port
 EXPOSE 5000
 
-# Run with gunicorn for production
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--threads", "2", "--timeout", "120", "app:app"]
+# Run with Python directly instead of gunicorn to avoid ONNX Runtime executable stack issues
+CMD ["python", "app.py"]
