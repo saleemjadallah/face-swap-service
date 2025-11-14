@@ -2,8 +2,12 @@
 # Updated for Debian Trixie compatibility
 FROM python:3.10-slim
 
-# Install system dependencies for OpenCV and image processing
+# Install system dependencies for OpenCV, image processing, and build tools
 RUN apt-get update && apt-get install -y \
+    build-essential \
+    g++ \
+    gcc \
+    cmake \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
