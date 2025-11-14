@@ -1,21 +1,28 @@
 # Face-Swapping Service Dockerfile
-# Use standard Python image instead of slim to avoid security issues with ONNX Runtime
-FROM python:3.10
+# Use Ubuntu base for better compatibility with ONNX Runtime
+FROM ubuntu:22.04
 
-# Install system dependencies for OpenCV, image processing, and build tools
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python 3.10 and system dependencies
 RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3.10-dev \
+    python3-pip \
     build-essential \
-    g++ \
-    gcc \
     cmake \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
     libxrender-dev \
     libgomp1 \
-    libgl1 \
-    execstack \
+    libgl1-mesa-glx \
     && rm -rf /var/lib/apt/lists/*
+
+# Set python3.10 as default python
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
 
 # Set working directory
 WORKDIR /app
@@ -23,14 +30,11 @@ WORKDIR /app
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install Python dependencies with precompiled ONNX Runtime
-# Use onnxruntime CPU package to avoid executable stack issues
-RUN pip install --no-cache-dir -r requirements.txt
+# Upgrade pip and install Python dependencies
+RUN python -m pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Clear executable stack flag from ONNX Runtime shared libraries to fix Railway compatibility
-RUN find /usr/local/lib/python3.10/site-packages/onnxruntime -name "*.so" -exec execstack -c {} \; 2>/dev/null || true
-
-# Set environment variable to disable ONNX Runtime telemetry and use CPU execution provider
+# Set environment variable to disable ONNX Runtime telemetry
 ENV ORT_DISABLE_TELEMETRY=1
 
 # Copy application code
