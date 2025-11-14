@@ -46,5 +46,5 @@ RUN mkdir -p ./models
 # Expose port
 EXPOSE 5000
 
-# Run with Python directly instead of gunicorn to avoid ONNX Runtime executable stack issues
-CMD ["python", "app.py"]
+# Run with Gunicorn for production (ONNX Runtime issue is now fixed with Ubuntu base)
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--threads", "2", "--timeout", "120", "--preload", "app:app"]
