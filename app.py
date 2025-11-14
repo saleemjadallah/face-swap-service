@@ -60,11 +60,11 @@ def initialize_models():
         # Download inswapper model if not exists
         if not model_path.exists():
             logger.info("Downloading face swapper model...")
-            # Try multiple mirror URLs for the inswapper model (November 2024 working mirrors)
+            # Try multiple mirror URLs for the inswapper model (November 2025 working mirrors)
             download_urls = [
+                "https://github.com/facefusion/facefusion-assets/releases/download/models/inswapper_128.onnx",
                 "https://huggingface.co/ezioruan/inswapper_128.onnx/resolve/main/inswapper_128.onnx",
-                "https://huggingface.co/Aitrepreneur/insightface/resolve/main/inswapper_128.onnx",
-                "https://huggingface.co/xingren23/comfyflow-models/resolve/main/insightface/inswapper_128.onnx",
+                "https://huggingface.co/CountFloyd/deepfake/resolve/main/inswapper_128.onnx",
             ]
 
             downloaded = False
